@@ -36,7 +36,6 @@ class PaymodeController extends Controller
         }
 
 
-
         $paymode = new Paymode();
 
         $paymode->Name = $request->Name;
