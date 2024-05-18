@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\api\CategoriaController;
 use App\Http\Controllers\api\PaymodeController;
 use App\Http\Controllers\api\CustomerController;
+use App\Http\Controllers\api\ProductoController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
@@ -28,3 +29,10 @@ Route::post('/customers', [CustomerController::class, 'store'])->name('customers
 Route::get('/customers/{customer}', [CustomerController::class, 'show'])->name('customers.show');
 Route::delete('/customers/{customer}', [CustomerController::class, 'destroy'])->name('customers.destroy');
 Route::put('/customers/{customer}', [CustomerController::class, 'update'])->name('customers.update');
+
+Route::get('/productos',[ProductoController::class,'index'])->name('products');
+Route::post('/productos', [ProductoController::class, 'store'])->name('products.store');
+Route::get('/productos/{producto}', [ProductoController::class, 'show'])->name('products.show');
+Route::delete('/productos/{producto}', [ProductoController::class, 'destroy'])->name('products.destroy');
+Route::put('/productos/{producto}', [ProductoController::class, 'update'])->name('products.update');
+
