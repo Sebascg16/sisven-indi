@@ -9,7 +9,7 @@ class Paymode extends Model
 {
     use HasFactory;
 
-    protected $table = 'paymode';
+    protected $table = 'paymodes';
     protected $primaryKey = 'id';
     public $timestamps = false;
 }
