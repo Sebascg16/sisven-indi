@@ -15,9 +15,12 @@ class ProductoController extends Controller
      */
     public function index()
     {
-        $productos = DB::table('products')->get();
+        $productos = DB::table('products')
+        ->join('categories', 'products.category_id', '=', 'categories.id')
+        ->select('products.*', 'categories.name as category_name')
+        ->get();
 
-        return json_encode(['productos'=> $productos]);
+        return response()->json(['productos' => $productos],200);
     }
 
     /**
@@ -25,30 +28,14 @@ class ProductoController extends Controller
      */
     public function store(Request $request)
     {
-        $validate = Validator::make($request->all(), [
-            'name' => ['required', 'max:255'],
-            'price' => ['required', 'numeric', 'min:0'],
-            'stock' => ['required', 'integer', 'min:0'],
-            'category_id' => ['required', 'integer', 'exists:categories,id']
-        ]);
-
-        if ($validate->fails()) {
-            return response()->json([
-                'msg' => 'Se produjo un error en la validación de la información.',
-                'statusCode' => 400,
-                'errors' => $validate->errors()
-            ]);
-        }
-
         $producto = new Producto();
-        $producto->name = $request->name;
+        $producto->name = $request->name;   
         $producto->price = $request->price;
         $producto->stock = $request->stock;
         $producto->category_id = $request->category_id;
         $producto->save();
 
-        return json_encode(['productos'=> $productos]);
-
+       return response()->json(['productos' => $producto], 201);
     }
 
     /**
@@ -57,26 +44,27 @@ class ProductoController extends Controller
     public function show(string $id)
     {
         $producto = Producto::find($id);
-        if(is_null($producto)){
-            return abort(404);
+        if (is_null($producto)) {
+            return response()->json(['error' => 'Producto no encontrado'], 404);
         }
-
-        return json_encode(['productos'=> $productos]);
+        return response()->json(['producto' => $producto], 200);
     }
-
     /**
      * Update the specified resource in storage.
      */
     public function update(Request $request, string $id)
     {
         $producto = Producto::find($id);
+        if (is_null($producto)) {
+            return response()->json(['error' => 'Producto no encontrado'], 404);
+        }
         $producto->name = $request->name;
         $producto->price = $request->price;
         $producto->stock = $request->stock;
         $producto->category_id = $request->category_id;
         $producto->save();
 
-        return json_encode(['productos'=> $productos]);
+        return response()->json(['productos' => $producto], 200);
 
     }
 
@@ -86,13 +74,12 @@ class ProductoController extends Controller
     public function destroy(string $id)
     {
         $producto = Producto::find($id);
+        if (is_null($producto)) {
+            return response()->json(['error' => 'Producto no encontrado'], 404);
+        }
         $producto->delete();
 
-        $productos = DB::table('products')
-        ->orderBy('name')
-        ->get();
-
-        return json_encode(['productos'=> $productos]);
+        return response()->json(['mensaje' => 'Producto eliminado correctamente'], 200);
 
     }
 }

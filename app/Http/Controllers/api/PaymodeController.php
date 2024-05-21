@@ -23,31 +23,19 @@ class PaymodeController extends Controller
      */
     public function store(Request $request)
     {
-        $validate = Validator::make($request->all(), [
-            'name' => ['required', 'max:30', 'unique:paymode'],
-            'observation' => ['required', 'max:255']
-        ]);
-
-        if ($validate->fails()) {
-            return response()->json([
-                'msg' => 'Se produjo un error en la validación de la información.',
-                'statusCode' => 400
-            ]);
-        }
-
+        $validatedData = $request->validate([
+            'name' => 'required|string|max:255',
+            'observation' => 'nullable|string',
+        ]); 
 
         $paymode = new Paymode();
 
-        $paymode->Name = $request->Name;
-        $paymode->Observation = $request->Observation;
+        $paymode->name = $validatedData['name'];
+        $paymode->observation = $validatedData['observation'];
 
         $paymode->save();
 
-        $paymodes = DB::table('paymode')
-            ->orderBy('id')
-            ->get();
-
-        return json_encode(['paymodes' => $paymodes] ); // si me sale error poner paymodes
+        return json_encode(['paymode' => $paymode], 200 ); 
     }
 
     /**
@@ -57,11 +45,7 @@ class PaymodeController extends Controller
     {
         //
         $paymode = Paymode::find($id);
-        if(is_null($paymode)){
-            return abort(404);
-        }
-
-        return json_encode(['paymodes'=> $paymode]);
+        return json_encode( ['paymode' => $paymode]);
     }
 
     /**
@@ -69,18 +53,23 @@ class PaymodeController extends Controller
      */
     public function update(Request $request, string $id)
     {
+        $validatedData = $request->validate([
+            'name' => 'required|string|max:255',
+            'observation' => 'nullable|string',
+        ]);
+
         $paymode = Paymode::find($id);
 
-        $paymode->Name = $request->Name;
-        $paymode->Observation = $request->Observation;
-
+        if (!$paymode) {
+            return response()->json(['message' => 'Modo de pago no encontrado'], 404);
+        }
+    
+        $paymode->name = $validatedData['name'];
+        $paymode->observation = $validatedData['observation'];
         $paymode->save();
+    
+        return response()->json(['paymode' => $paymode], 200);
 
-        $paymodes = DB::table('paymode')
-            ->orderBy('id')
-            ->get();
-
-        return json_encode(['paymodes' => $paymodes]);
     }
 
     /**
@@ -91,7 +80,7 @@ class PaymodeController extends Controller
         $paymode = Paymode::find($id);
         $paymode->delete();
 
-        $paymodes = DB::table('paymode')
+        $paymodes = DB::table('paymodes')
             ->orderBy('id')
             ->get();
 

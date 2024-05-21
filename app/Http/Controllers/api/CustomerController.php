@@ -25,40 +25,34 @@ class CustomerController extends Controller
      */
     public function store(Request $request)
     {
-        $validate = Validator::make($request->all(), [
-            'document_number' => ['required', 'unique:customers', 'max:20'],
-            'first_name' => ['required', 'max:50'],
-            'last_name' => ['required', 'max:50'],
-            'address' => ['required', 'max:255'],
-            'birthday' => ['required', 'date'],
-            'phone_number' => ['required', 'max:15'],
-            'email' => ['required', 'email', 'max:100']
+        $validatedData = $request->validate([
+            'document_number' => 'required|string|max:255|unique:customers,document_number',
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'address' => 'required|string|max:255',
+            'birthday' => 'required|date',
+            'phone_number' => 'required|string|max:15',
+            'email' => 'required|email|max:255',
         ]);
 
-        if ($validate->fails()) {
-            return response()->json([
-                'msg' => 'Se produjo un error en la validación de la información.',
-                'statusCode' => 400,
-                'errors' => $validate->errors()
-            ]);
-        }
-
         $customer = new Customer();
-        
-        $customer->document_number = $request->document_number;
-        $customer->first_name = $request->first_name;
-        $customer->last_name = $request->last_name;
-        $customer->address = $request->address;
-        $customer->birthday = $request->birthday;
-        $customer->phone_number = $request->phone_number;
-        $customer->email = $request->email;
+       
+        $customer->document_number = $validatedData['document_number'];
+        $customer->first_name = $validatedData['first_name'];
+        $customer->last_name = $validatedData['last_name'];
+        $customer->address = $validatedData['address'];
+        $customer->birthday = $validatedData['birthday'];
+        $customer->phone_number = $validatedData['phone_number'];
+        $customer->email = $validatedData['email'];
         $customer->save();
         
-        $customers = DB::table('customers')
+        /*$customers = DB::table('customers')
         ->orderBy('id')
-        ->get();
-
-        return json_encode(['customers' => $customers]);
+        ->get(); 
+        
+        return json_encode(['customer' => $customers]); 
+        */
+        return response()->json(['customer' => $customer], 201);
         
     }
 
@@ -67,20 +61,46 @@ class CustomerController extends Controller
      */
     public function show(string $id)
     {
-        $customers = Customer::find($id);
-        if(is_null($customer)){
+        $customer = Customer::find($id);
+        if (is_null($customer)) {
+            return response()->json(['message' => 'Cliente no encontrado'], 404);
+        }
+        return response()->json(['customer' => $customer], 200);
+    }
+       /* if(is_null($customer)){
             return abort(404);
         }
 
-        return json_encode(['customers'=> $customers]);
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
+        return json_encode(['customer'=> $customer]);*/
     public function update(Request $request, string $id)
     {
+        $validatedData = $request->validate([
+            'document_number' => 'required|string|max:255|unique:customers,document_number,' . $id,
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'address' => 'required|string|max:255',
+            'birthday' => 'required|date',
+            'phone_number' => 'required|string|max:15',
+            'email' => 'required|email|max:255',
+        ]);
+
         $customer = Customer::find($id);
+        if (is_null($customer)) {
+            return response()->json(['message' => 'Cliente no encontrado'], 404);
+        }
+
+        $customer->document_number = $validatedData['document_number'];
+        $customer->first_name = $validatedData['first_name'];
+        $customer->last_name = $validatedData['last_name'];
+        $customer->address = $validatedData['address'];
+        $customer->birthday = $validatedData['birthday'];
+        $customer->phone_number = $validatedData['phone_number'];
+        $customer->email = $validatedData['email'];
+        $customer->save();
+
+        return response()->json(['customer' => $customer], 200);
+    }
+        /*$customer = Customer::find($id);
        
         $customer->document_number = $request->document_number;
         $customer->first_name = $request->first_name;
@@ -95,23 +115,27 @@ class CustomerController extends Controller
         ->orderBy('id')
         ->get();
 
-        return json_encode(['customers'=> $customers]);
+        return json_encode(['customer'=> $customer]);*/
 
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(string $id)
     {
-        $customer = Customer::find($id);
+        {
+            $customer = Customer::find($id);
+            if (is_null($customer)) {
+                return response()->json(['message' => 'Cliente no encontrado'], 404);
+            }
+    
+            $customer->delete();
+            return response()->json(['message' => 'Cliente eliminado con éxito'], 200);
+        }
+    
+        /*$customer = Customer::find($id);
         $customer->delete();
 
         $customers = DB::table('customers')
         ->orderBy('id')
         ->get();
 
-        return json_encode(['customers'=> $customers]);
-
+      return json_encode(['customer'=> $customers]);*/
     }
 }
